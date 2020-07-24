@@ -10146,3 +10146,15 @@ section.resume-section .resume-section-content {
 .foot{
   margin: 20px;
 }
+
+.border{
+  border:3px;
+  border-color: #888888;
+  border-color: red;
+  padding: 20px;
+   box-shadow: 2px 2px 10px grey;
+  border-radius: 5px;
+  margin:20px;
+}
+.border:hover{
+  box-shadow: 2px 2px 10px grey;
