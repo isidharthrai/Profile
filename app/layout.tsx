@@ -23,7 +23,7 @@ const jetbrainsMono = localFont({
   display: 'swap',
 });
 
-const BASE_URL = 'https://isidharthrai.github.io/Profile';
+const BASE_URL = 'https://sidharthrai.com';
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),

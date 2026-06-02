@@ -2,7 +2,7 @@
 
 Personal portfolio of **Sidharth R.**, Lead Software Engineer at Persistent Systems with 6+ years of experience in Generative AI, Data Engineering, and Cloud Computing. Ex-IBM.
 
-🔗 **Live:** [isidharthrai.github.io/Profile](https://isidharthrai.github.io/Profile)
+🔗 **Live:** [sidharthrai.com](https://sidharthrai.com)
 
 ---
 
