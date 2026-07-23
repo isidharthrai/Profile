@@ -1,10 +1,9 @@
 "use client";
 
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import {
   FileText,
   Lightbulb,
-  ExternalLink,
   Database,
   Mic,
   MessageSquare,
@@ -13,10 +12,23 @@ import {
   Route,
   Search,
   Layout,
+  X,
+  type LucideIcon,
 } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-const portfolioItems = [
+type PortfolioItem = {
+  type: string;
+  title: string;
+  venue: string;
+  focus: string;
+  description: string;
+  icon: LucideIcon;
+  color: string;
+  iconColor: string;
+};
+
+const portfolioItems: PortfolioItem[] = [
   {
     type: "Research Paper",
     title: "Strategic: Risk, Return and Technical Analysis of Stock Prices",
@@ -142,74 +154,55 @@ const portfolioItems = [
   },
 ];
 
+const filters = [
+  { label: "All", value: "all" },
+  { label: "Research Papers", value: "Research Paper" },
+  { label: "Patents", value: "Patent" },
+  { label: "Enterprise", value: "Enterprise Project" },
+];
+
 export default function Portfolio() {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [isHovered, setIsHovered] = useState(false);
+  const [activeFilter, setActiveFilter] = useState("all");
+  const [selected, setSelected] = useState<PortfolioItem | null>(null);
 
-  // Handle scroll events to update dot indicator natively without thrashing state
-  const handleScroll = () => {
-    if (!scrollRef.current) return;
-    const container = scrollRef.current;
-
-    // Calculate which card is closest to the center of the scroll container
-    const scrollCenter = container.scrollLeft + container.offsetWidth / 2;
-
-    let closestIndex = 0;
-    let minDistance = Infinity;
-
-    Array.from(container.children).forEach((child, index) => {
-      const childElement = child as HTMLElement;
-      const childCenter =
-        childElement.offsetLeft + childElement.offsetWidth / 2;
-      const distance = Math.abs(scrollCenter - childCenter);
-
-      if (distance < minDistance) {
-        minDistance = distance;
-        closestIndex = index;
-      }
-    });
-
-    if (closestIndex !== activeIndex) {
-      setActiveIndex(closestIndex);
+  const counts = useMemo(() => {
+    const map: Record<string, number> = { all: portfolioItems.length };
+    for (const f of filters) {
+      if (f.value === "all") continue;
+      map[f.value] = portfolioItems.filter((i) => i.type === f.value).length;
     }
-  };
+    return map;
+  }, []);
 
-  const scrollTo = (index: number) => {
-    if (!scrollRef.current) return;
-    const container = scrollRef.current;
-    const child = container.children[index] as HTMLElement;
+  const visibleItems = useMemo(
+    () =>
+      activeFilter === "all"
+        ? portfolioItems
+        : portfolioItems.filter((i) => i.type === activeFilter),
+    [activeFilter]
+  );
 
-    if (child) {
-      container.scrollTo({
-        left:
-          child.offsetLeft - container.offsetWidth / 2 + child.offsetWidth / 2,
-        behavior: "smooth",
-      });
-      setActiveIndex(index);
-    }
-  };
-
-  // Auto-scroll that pauses on hover (using native smooth scroll)
+  // Close modal on Escape and lock body scroll while open
   useEffect(() => {
-    if (isHovered) return;
-
-    const interval = setInterval(() => {
-      if (!scrollRef.current) return;
-      const nextIndex =
-        activeIndex >= portfolioItems.length - 1 ? 0 : activeIndex + 1;
-      scrollTo(nextIndex);
-    }, 4000); // Autoscroll every 4 seconds
-
-    return () => clearInterval(interval);
-  }, [activeIndex, isHovered]);
+    if (!selected) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSelected(null);
+    };
+    window.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [selected]);
 
   return (
     <section
       id="portfolio"
-      className="py-24 relative border-t border-zinc-200 dark:border-zinc-800/50 overflow-hidden"
+      className="py-24 relative border-t border-zinc-200 dark:border-zinc-800/50"
     >
-      <div className="max-w-7xl mx-auto px-6 md:px-12 mb-12">
+      <div className="max-w-7xl mx-auto px-6 md:px-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -220,104 +213,201 @@ export default function Portfolio() {
           </h2>
           <p className="text-zinc-600 dark:text-zinc-400 text-lg max-w-2xl font-light mb-8">
             A showcase of my research publications, patents, and engineering
-            projects across multiple domains including Healthcare, Supply Chain, and Finance.
+            projects across multiple domains including Healthcare, Supply Chain,
+            and Finance.
           </p>
-          
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-4 border-l-2 border-indigo-500/50 pl-4 md:pl-6">
+
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-4 border-l-2 border-indigo-500/50 pl-4 md:pl-6 mb-10">
             <div className="flex flex-col">
-              <span className="text-2xl md:text-3xl font-bold text-zinc-900 dark:text-zinc-100">2+</span>
-              <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mt-1">Publications</span>
+              <span className="text-2xl md:text-3xl font-bold text-zinc-900 dark:text-zinc-100">
+                2+
+              </span>
+              <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mt-1">
+                Publications
+              </span>
             </div>
             <div className="flex flex-col">
-              <span className="text-2xl md:text-3xl font-bold text-zinc-900 dark:text-zinc-100">1+</span>
-              <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mt-1">Patents</span>
+              <span className="text-2xl md:text-3xl font-bold text-zinc-900 dark:text-zinc-100">
+                1+
+              </span>
+              <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mt-1">
+                Patents
+              </span>
             </div>
             <div className="flex flex-col">
-              <span className="text-2xl md:text-3xl font-bold text-zinc-900 dark:text-zinc-100">8+</span>
-              <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mt-1">Projects</span>
+              <span className="text-2xl md:text-3xl font-bold text-zinc-900 dark:text-zinc-100">
+                8+
+              </span>
+              <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mt-1">
+                Projects
+              </span>
             </div>
             <div className="flex flex-col justify-center translate-y-1 md:translate-y-2 w-full md:w-auto">
-              <span className="text-sm font-medium text-indigo-400 italic">...& counting</span>
+              <span className="text-sm font-medium text-indigo-400 italic">
+                ...&amp; counting
+              </span>
             </div>
           </div>
         </motion.div>
-      </div>
 
-      <div
-        className="relative w-full"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        onTouchStart={() => setIsHovered(true)}
-        onTouchEnd={() => setIsHovered(false)}
-      >
-        <div
-          ref={scrollRef}
-          onScroll={handleScroll}
-          className="flex gap-6 overflow-x-auto snap-x snap-mandatory px-[7.5vw] md:px-[15%] pb-8 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] scroll-smooth items-stretch"
+        {/* Filter tabs */}
+        <div className="flex flex-wrap gap-2 mb-8">
+          {filters.map((filter) => {
+            const isActive = activeFilter === filter.value;
+            return (
+              <button
+                key={filter.value}
+                onClick={() => setActiveFilter(filter.value)}
+                className={`relative rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                  isActive
+                    ? "text-white dark:text-zinc-950"
+                    : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+                }`}
+              >
+                {isActive && (
+                  <motion.span
+                    layoutId="portfolio-filter-pill"
+                    className="absolute inset-0 rounded-full bg-zinc-900 dark:bg-white"
+                    transition={{ type: "spring", stiffness: 400, damping: 32 }}
+                  />
+                )}
+                <span className="relative z-10">
+                  {filter.label}
+                  <span
+                    className={`ml-1.5 ${
+                      isActive
+                        ? "text-white/60 dark:text-zinc-950/60"
+                        : "text-zinc-400 dark:text-zinc-600"
+                    }`}
+                  >
+                    {counts[filter.value]}
+                  </span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Cards grid */}
+        <motion.div
+          layout
+          className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
         >
-          {portfolioItems.map((item, index) => (
-            <div
-              key={`${item.title}-${index}`}
-              className={`relative px-8 py-8 md:py-10 rounded-3xl bg-zinc-100/40 dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 transition-all duration-300 group flex flex-col justify-between shrink-0 hover:bg-zinc-200/40 dark:hover:bg-zinc-800/40 w-[85vw] md:w-[70%] h-[70vh] min-h-[450px] max-h-[600px] snap-center ${item.color}`}
-            >
-              <div className="relative z-10 flex flex-col h-full">
-                <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] pr-2">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="p-2.5 rounded-full bg-white/80 dark:bg-zinc-950/80 border border-zinc-200/80 dark:border-zinc-800/80 shadow-sm transition-transform group-hover:scale-110 shrink-0">
+          <AnimatePresence mode="popLayout">
+            {visibleItems.map((item) => (
+              <motion.button
+                key={item.title}
+                layout
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.25 }}
+                onClick={() => setSelected(item)}
+                className={`group relative flex flex-col overflow-hidden rounded-3xl border border-zinc-200 bg-white p-6 text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/5 dark:border-zinc-800 dark:bg-zinc-900/50 dark:hover:shadow-black/40 ${item.color}`}
+              >
+                {/* Gradient tint that appears on hover */}
+                <div
+                  className={`pointer-events-none absolute inset-0 bg-gradient-to-br opacity-0 transition-opacity duration-300 group-hover:opacity-100 ${item.color}`}
+                />
+
+                <div className="relative z-10 flex h-full flex-col">
+                  <div className="mb-5 flex items-center gap-3">
+                    <div className="rounded-full border border-zinc-200/80 bg-white/80 p-2.5 shadow-sm transition-transform group-hover:scale-110 dark:border-zinc-800/80 dark:bg-zinc-950/80">
                       <item.icon size={18} className={item.iconColor} />
                     </div>
-                    <span className="text-xs font-bold tracking-widest text-zinc-500 uppercase">
+                    <span className="text-[11px] font-bold uppercase tracking-widest text-zinc-500">
                       {item.type}
                     </span>
                   </div>
 
-                  <h3 className="text-xl md:text-2xl lg:text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-4 leading-snug group-hover:text-zinc-950 dark:group-hover:text-white transition-colors">
+                  <h3 className="mb-3 text-lg font-bold leading-snug text-zinc-900 transition-colors group-hover:text-zinc-950 dark:text-zinc-100 dark:group-hover:text-white">
                     {item.title}
                   </h3>
 
-                  <p
-                    className={`text-sm md:text-base font-semibold mb-6 ${item.iconColor}`}
-                  >
+                  <p className={`mb-4 text-sm font-semibold ${item.iconColor}`}>
                     {item.focus}
                   </p>
 
-                  <p className="text-zinc-600 dark:text-zinc-400 text-sm md:text-base leading-relaxed whitespace-normal">
+                  <p className="mb-6 line-clamp-3 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
                     {item.description}
                   </p>
-                </div>
 
-                <div className="mt-6 pt-6 border-t border-zinc-200/60 dark:border-zinc-800/60 flex items-center justify-between shrink-0">
-                  <span className="text-xs font-medium font-mono text-zinc-500 bg-white/50 dark:bg-zinc-950/50 px-3 py-1.5 rounded-full border border-zinc-200/50 dark:border-zinc-800/50 truncate max-w-[200px] md:max-w-xs">
-                    {item.venue}
-                  </span>
-                  <button className="w-8 h-8 rounded-full bg-zinc-100/80 dark:bg-zinc-800/80 flex items-center justify-center group-hover:bg-zinc-200 dark:group-hover:bg-zinc-700 transition-colors shrink-0">
-                    <ExternalLink
-                      size={14}
-                      className="text-zinc-600 dark:text-zinc-300 group-hover:text-zinc-900 dark:group-hover:text-white"
-                    />
-                  </button>
+                  <div className="mt-auto flex items-center justify-between gap-3 border-t border-zinc-200/60 pt-4 dark:border-zinc-800/60">
+                    <span className="truncate rounded-full border border-zinc-200/50 bg-white/50 px-3 py-1 font-mono text-xs text-zinc-500 dark:border-zinc-800/50 dark:bg-zinc-950/50">
+                      {item.venue}
+                    </span>
+                    <span className="shrink-0 text-xs font-semibold text-zinc-400 transition-colors group-hover:text-indigo-500 dark:group-hover:text-indigo-400">
+                      Read more →
+                    </span>
+                  </div>
                 </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Dots Navigation */}
-        <div className="flex items-center justify-center gap-3 mt-2">
-          {portfolioItems.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => scrollTo(index)}
-              className={`h-2 rounded-full transition-all duration-300 ${
-                activeIndex === index
-                  ? "w-8 bg-indigo-500"
-                  : "w-2 bg-zinc-300 dark:bg-zinc-700 hover:bg-zinc-400 dark:hover:bg-zinc-500"
-              }`}
-              aria-label={`Go to slide ${index + 1}`}
-            />
-          ))}
-        </div>
+              </motion.button>
+            ))}
+          </AnimatePresence>
+        </motion.div>
       </div>
+
+      {/* Detail modal */}
+      <AnimatePresence>
+        {selected && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelected(null)}
+            className="fixed inset-0 z-[90] flex items-center justify-center p-4 sm:p-6"
+          >
+            <div className="absolute inset-0 bg-zinc-950/60 backdrop-blur-sm" />
+
+            <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-label={selected.title}
+              initial={{ opacity: 0, scale: 0.95, y: 12 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 12 }}
+              transition={{ type: "spring", stiffness: 300, damping: 28 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative z-10 max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-zinc-200 bg-white p-7 shadow-2xl dark:border-zinc-800 dark:bg-zinc-900 md:p-9"
+            >
+              <button
+                onClick={() => setSelected(null)}
+                aria-label="Close"
+                className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-white"
+              >
+                <X size={18} />
+              </button>
+
+              <div className="mb-5 flex items-center gap-3">
+                <div className="rounded-full border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-950">
+                  <selected.icon size={22} className={selected.iconColor} />
+                </div>
+                <span className="text-xs font-bold uppercase tracking-widest text-zinc-500">
+                  {selected.type}
+                </span>
+              </div>
+
+              <h3 className="mb-3 text-2xl font-bold leading-tight text-zinc-900 dark:text-white">
+                {selected.title}
+              </h3>
+
+              <p className={`mb-5 text-sm font-semibold ${selected.iconColor}`}>
+                {selected.focus}
+              </p>
+
+              <p className="mb-6 leading-relaxed text-zinc-600 dark:text-zinc-300">
+                {selected.description}
+              </p>
+
+              <div className="border-t border-zinc-200 pt-5 dark:border-zinc-800">
+                <span className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 font-mono text-xs text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950">
+                  {selected.venue}
+                </span>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

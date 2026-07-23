@@ -2,6 +2,10 @@ import type { Metadata, Viewport } from 'next';
 import localFont from 'next/font/local';
 import './globals.css';
 import ScrollProgress from '@/components/ScrollProgress';
+import ThemeProvider from '@/components/ThemeProvider';
+import Analytics from '@/components/Analytics';
+import BackToTop from '@/components/BackToTop';
+import { faqs } from '@/lib/faq';
 
 const inter = localFont({
   src: [
@@ -81,6 +85,10 @@ export const metadata: Metadata = {
     canonical: BASE_URL,
   },
 
+  verification: {
+    google: 'FnF79eWl5lQNqvSI9cVaQfriOVbO90RpWc0uwzL4NKI',
+  },
+
   openGraph: {
     type: 'website',
     url: BASE_URL,
@@ -90,7 +98,7 @@ export const metadata: Metadata = {
       'Lead Software Engineer at Persistent Systems specializing in Generative AI, Data Engineering, and Cloud Computing. 6+ years building enterprise-grade AI solutions in healthcare and supply chain.',
     images: [
       {
-        url: '/profile_image.png',
+        url: '/og.png',
         width: 1200,
         height: 630,
         alt: 'Sidharth R. — Lead Software Engineer & GenAI Expert',
@@ -105,7 +113,7 @@ export const metadata: Metadata = {
     title: 'Sidharth R. | Lead Software Engineer & GenAI Expert',
     description:
       'Lead Software Engineer at Persistent Systems specializing in Generative AI, Data Engineering, and Cloud Computing. 6+ years of enterprise AI experience.',
-    images: ['/profile_image.png'],
+    images: ['/og.png'],
     creator: '@isidharthrai',
     site: '@isidharthrai',
   },
@@ -122,8 +130,11 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#09090b',
-  colorScheme: 'dark',
+  themeColor: [
+    { media: '(prefers-color-scheme: dark)', color: '#09090b' },
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+  ],
+  colorScheme: 'dark light',
 };
 
 
@@ -200,20 +211,41 @@ const jsonLd = {
       author: { '@id': `${BASE_URL}/#person` },
       inLanguage: 'en-US',
     },
+    {
+      '@type': 'FAQPage',
+      '@id': `${BASE_URL}/#faq`,
+      mainEntity: faqs.map((faq) => ({
+        '@type': 'Question',
+        name: faq.question,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: faq.answer,
+        },
+      })),
+    },
   ],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`dark ${inter.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
-      <body className="bg-zinc-950 text-zinc-50 antialiased selection:bg-zinc-800 selection:text-zinc-50">
+    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
+      <body className="bg-white text-zinc-900 antialiased selection:bg-zinc-200 dark:bg-zinc-950 dark:text-zinc-50 dark:selection:bg-zinc-800 dark:selection:text-zinc-50">
         {/* JSON-LD structured data — placed in body, valid per spec and Google guidelines */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        <ScrollProgress />
-        {children}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem={false}
+          disableTransitionOnChange
+        >
+          <ScrollProgress />
+          {children}
+          <BackToTop />
+        </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );

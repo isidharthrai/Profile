@@ -1,0 +1,35 @@
+# Sidharth R.
+
+> Lead Software Engineer at Persistent Systems with 6+ years of experience in Generative AI, Agentic AI, Data Engineering, MLOps, and Cloud Computing. Ex-IBM. Specializes in enterprise-grade AI for the healthcare domain.
+
+Sidharth R. (Sidharth Rai) builds production Generative AI and data-engineering systems — RAG pipelines, LLM fine-tuning (LoRA/PEFT), distributed search orchestration, and large-scale Databricks/Medallion data platforms. He is pursuing an MS in ML & AI at Liverpool John Moores University and holds a Postgraduate Diploma from IIIT-Bangalore.
+
+## Contact
+- Email: isidharthrai@gmail.com
+- LinkedIn: https://linkedin.com/in/isidharthrai
+- GitHub: https://github.com/isidharthrai
+
+## Expertise
+- Generative & Agentic AI: Azure OpenAI, Vertex AI, RAG, LoRA, LangChain, LLMs
+- Data Engineering: PySpark, Databricks, Unity Catalog, Delta Lake, Medallion Architecture, Argo Workflows
+- Backend & MLOps: FastAPI, Python, OpenTelemetry, Docker, Kubernetes
+- Databases & Search: MongoDB Atlas Vector Search, Qdrant, Vespa, SQL, Elasticsearch
+- ML & Models: LightGBM, ONNX, Sentence Transformers, Claude, Gemini, Llama
+- Frontend: React, TypeScript, Module Federation (Micro-Frontends), Tailwind CSS
+
+## Selected Work
+- Research: "Strategic: Risk, Return and Technical Analysis of Stock Prices" (SSRN)
+- Research: "Adaptive Prompt Engineering Strategies for GenAI in Finance"
+- Patent: Desmogging Framework for Intelligent Transport (IN 201911036469)
+- Enterprise: GenAI supply-chain intelligence, healthcare provider search, ML-powered semantic ranking, distributed search orchestration APIs
+
+## Experience
+- Persistent Systems — Data Engineer / Lead Software Engineer (Apr 2025 - Present)
+- IBM — Application Developer & Associate System Engineer (Jan 2021 - Apr 2025)
+- AXL Electric Vehicles — Software Development Engineer (2020)
+- Tecnovix — Software Developer (2019)
+
+## Links
+- Website: https://sidharthrai.com
+- Instagram: https://www.instagram.com/isidharthrai
+- YouTube: https://www.youtube.com/@isidharthrai
